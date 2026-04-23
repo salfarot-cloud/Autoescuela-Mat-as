@@ -3,41 +3,59 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Autoescuela Matías — Test</title>
+    <meta name="description" content="Test oficial de la Autoescuela Matías - 10 preguntas aleatorias" />
+    <title>Autoescuela Matías — Test de Conducción</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
 
   <body>
-    <div class="card">
-      <div class="title">AUTOESCUELA MATÍAS</div>
-      <div class="subtitle">Test oficial · 10 preguntas aleatorias</div>
+    <!-- Contenedor principal de la aplicación -->
+    <div class="card" id="app-container">
+      <!-- Encabezado -->
+      <header>
+        <h1 class="title">AUTOESCUELA MATÍAS</h1>
+        <p class="subtitle">Test oficial · 10 preguntas aleatorias</p>
+      </header>
 
+      <!-- Barra de progreso -->
       <div class="progress-bar">
         <div class="progress-fill" id="barra-progreso"></div>
       </div>
 
-      <div class="question-box">
-        <div class="question-number" id="numero-pregunta">Pregunta 1 de 10</div>
-        <img id="imagen-pregunta" class="question-image" alt="Imagen de la pregunta" />
-        <div class="question-text" id="texto-pregunta">Cargando...</div>
-      </div>
+      <!-- Caja de pregunta -->
+      <section class="question-box">
+        <div class="question-number" id="numero-pregunta">
+          Cargando...
+        </div>
+        <img 
+          id="imagen-pregunta" 
+          class="question-image" 
+          alt="Imagen de la pregunta" 
+          src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='200'%3E%3Crect fill='%23f0f0f0' width='600' height='200'/%3E%3C/svg%3E"
+        />
+        <div class="question-text" id="texto-pregunta">Cargando pregunta...</div>
+      </section>
 
+      <!-- Contenedor de opciones -->
       <div class="options" id="contenedor-opciones"></div>
 
+      <!-- Botones de acción -->
       <div class="buttons-container">
-        <button class="btn btn-ghost" id="btn-reiniciar">Reiniciar</button>
-        <button class="btn btn-primary" id="btn-siguiente">Siguiente →</button>
+        <button class="btn btn-ghost" id="btn-reiniciar">
+          ↻ Reiniciar
+        </button>
+        <button class="btn btn-primary" id="btn-siguiente" disabled>
+          Siguiente →
+        </button>
       </div>
 
-      <div class="result-box" id="resultado">
-        <div id="texto-resultado"></div>
-        <div id="badge-nivel" class="badge"></div>
-        <div id="texto-nivel" style="margin-top: 6px;"></div>
-      </div>
+      <!-- Caja de resultados (inicialmente oculta) -->
+      <div class="result-box" id="resultado"></div>
     </div>
 
-    <!-- Módulos JavaScript -->
+    <!-- Módulos JavaScript en orden correcto -->
     <script src="data.js"></script>
+    <script src="components.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

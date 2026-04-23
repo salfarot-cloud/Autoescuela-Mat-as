@@ -1,112 +1,210 @@
 /**
- * Modelo de Datos - Autoescuela Matías
- * 
- * Banco de preguntas con estructuras validadas según SPEC.md
- * Cada pregunta contiene: texto, imagen (600x200), opciones y respuesta correcta
+ * Modelo de Datos - Autoescuela Matías Campus 2026
+ *
+ * Banco de preguntas y temario resumido.
+ * Cada pregunta contiene: q (texto), img (url), opts (opciones), ans (índice correcto), why (explicación).
+ * Cada tema contiene: t (título), d (descripción).
  */
 
-// Constantes de configuración
+// Configuración global de la app
 const CONFIG = {
-  TOTAL_PREGUNTAS: 10,
-  IMAGEN_ANCHO: 600,
-  IMAGEN_ALTO: 200,
   PREGUNTAS_TEST: 10
 };
 
 // Banco completo de preguntas
-const BANCO_PREGUNTAS = [
+const QUIZ_BANK = [
   {
-    id: 1,
-    texto: "¿Velocidad máxima en autopista para turismos?",
-    imagen: "https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=600&h=200&fit=crop",
-    opciones: ["90 km/h", "100 km/h", "120 km/h"],
-    correcta: 2,
-    dificultad: "básica"
+    q: "Según el manual, ¿quién se considera CONDUCTOR?",
+    img: "https://images.unsplash.com/photo-1516570161787-2fd917215a3d?q=80&w=800",
+    opts: [
+      "La persona que empuja una bicicleta o un ciclomotor",
+      "La persona que empuja una motocicleta",
+      "La persona que camina por la acera"
+    ],
+    ans: 1,
+    why: "Quien empuja carro, bici o ciclomotor es peatón. Quien empuja una motocicleta se considera conductor."
   },
   {
-    id: 2,
-    texto: "Semáforo ámbar fijo: si puedes detenerte, ¿qué haces?",
-    imagen: "https://images.unsplash.com/photo-1486299204817-a6f6c1b30b60?w=600&h=200&fit=crop",
-    opciones: ["Acelerar", "Detenerte", "Pasar igual"],
-    correcta: 1,
-    dificultad: "básica"
+    q: "Un peatón es la persona que...",
+    img: "https://images.unsplash.com/photo-1521292270410-a8c53642e9d0?q=80&w=800",
+    opts: [
+      "Transita a pie por la vía o empuja un carro, bici o ciclomotor",
+      "Conduce un turismo por la calzada",
+      "Solo camina por la acera"
+    ],
+    ans: 0,
+    why: "El manual define peatón como quien transita a pie o empuja carro, bici o ciclomotor."
   },
   {
-    id: 3,
-    texto: "En una glorieta, ¿quién tiene prioridad?",
-    imagen: "https://images.unsplash.com/photo-1464207687429-7505649dae38?w=600&h=200&fit=crop",
-    opciones: ["El que entra", "El que circula dentro", "El más grande"],
-    correcta: 1,
-    dificultad: "básica"
+    q: "¿Qué vehículo se considera REMOLQUE LIGERO?",
+    img: "https://images.unsplash.com/photo-1525609004556-c46c7d6cf023?q=80&w=800",
+    opts: [
+      "Aquel con MMA superior a 750 kg",
+      "Aquel con MMA hasta 750 kg",
+      "Aquel con MMA hasta 3.500 kg"
+    ],
+    ans: 1,
+    why: "Remolque ligero = hasta 750 kg de Masa Máxima Autorizada (MMA)."
   },
   {
-    id: 4,
-    texto: "Línea continua en la calzada: ¿qué significa?",
-    imagen: "https://images.unsplash.com/photo-1460661326751-86db01b11c7c?w=600&h=200&fit=crop",
-    opciones: ["Prohibido adelantar", "Solo recomendación", "No significa nada"],
-    correcta: 0,
-    dificultad: "básica"
+    q: "¿Qué velocidad máxima puede alcanzar un ciclomotor?",
+    img: "https://images.unsplash.com/photo-1502877338535-766e1452684a?q=80&w=800",
+    opts: [
+      "45 km/h",
+      "50 km/h",
+      "60 km/h"
+    ],
+    ans: 0,
+    why: "El ciclomotor tiene velocidad máxima de 45 km/h según el manual."
   },
   {
-    id: 5,
-    texto: "Si has bebido alcohol, ¿qué debes hacer?",
-    imagen: "https://images.unsplash.com/photo-1608537324008-2ffc9c0b031d?w=600&h=200&fit=crop",
-    opciones: ["Conducir despacio", "Esperar", "No conducir"],
-    correcta: 2,
-    dificultad: "básica"
+    q: "Esta señal indica la proximidad de:",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Spain_traffic_signal_paso_a_nivel_con_barreras.png/480px-Spain_traffic_signal_paso_a_nivel_con_barreras.png",
+    opts: [
+      "Paso a nivel con barreras",
+      "Paso a nivel sin barreras",
+      "Estación de tren"
+    ],
+    ans: 0,
+    why: "Triángulo con tren y barrera = paso a nivel con barreras."
   },
   {
-    id: 6,
-    texto: "Peatón cruzando sin semáforo: ¿qué haces?",
-    imagen: "https://images.unsplash.com/photo-1518050064318-f75f72f0b66c?w=600&h=200&fit=crop",
-    opciones: ["Claxon", "Detenerte", "Pasar antes"],
-    correcta: 1,
-    dificultad: "básica"
+    q: "Si un agente levanta el brazo verticalmente, debes:",
+    img: "https://images.unsplash.com/photo-1521292270410-a8c53642e9d0?q=80&w=800",
+    opts: [
+      "Detenerte solo si vienes de frente",
+      "Detenerte solo si vienes por detrás",
+      "Detenerte vengas de donde vengas"
+    ],
+    ans: 2,
+    why: "Brazo levantado = detención obligatoria para todos los usuarios."
   },
   {
-    id: 7,
-    texto: "Niebla densa: ¿qué luces usas?",
-    imagen: "https://images.unsplash.com/photo-1464207687429-7505649dae38?w=600&h=200&fit=crop",
-    opciones: ["Largas", "Cortas + antiniebla", "Ninguna"],
-    correcta: 1,
-    dificultad: "intermedia"
+    q: "Esta señal prohíbe el paso a:",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Spain_traffic_signal_prohibido_vehiculos_a_motor.png/480px-Spain_traffic_signal_prohibido_vehiculos_a_motor.png",
+    opts: [
+      "Todos los vehículos",
+      "Vehículos de motor",
+      "Solo motocicletas"
+    ],
+    ans: 1,
+    why: "Prohíbe el paso a vehículos de motor; pueden pasar peatones, ciclos, etc."
   },
   {
-    id: 8,
-    texto: "Distancia de seguridad: ¿cuál es correcta?",
-    imagen: "https://images.unsplash.com/photo-1476973422084-e8fa66ff9895?w=600&h=200&fit=crop",
-    opciones: ["La necesaria para frenar", "5 metros", "Solo en autopista"],
-    correcta: 0,
-    dificultad: "intermedia"
+    q: "¿Qué documentación es obligatoria llevar en el vehículo?",
+    img: "https://images.unsplash.com/photo-1511391037251-0a3f66f9a9e1?q=80&w=800",
+    opts: [
+      "Permiso de conducción, permiso de circulación y tarjeta ITV",
+      "Solo el permiso de conducción",
+      "Solo el recibo del seguro"
+    ],
+    ans: 0,
+    why: "Obligatoria: permiso de conducción, permiso de circulación y tarjeta ITV."
   },
   {
-    id: 9,
-    texto: "Paso a nivel sin barreras y viene un tren: ¿qué haces?",
-    imagen: "https://images.unsplash.com/photo-1474487260768-7cc820cf3b41?w=600&h=200&fit=crop",
-    opciones: ["Acelerar", "Detenerte", "Pasar si está lejos"],
-    correcta: 1,
-    dificultad: "avanzada"
+    q: "Esta señal azul con número indica:",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Spain_traffic_signal_velocidad_minima_obligatoria.png/480px-Spain_traffic_signal_velocidad_minima_obligatoria.png",
+    opts: [
+      "Velocidad máxima",
+      "Velocidad mínima obligatoria",
+      "Velocidad recomendada"
+    ],
+    ans: 1,
+    why: "Círculo azul con número = velocidad mínima obligatoria."
   },
   {
-    id: 10,
-    texto: "Señal de STOP: ¿qué debes hacer?",
-    imagen: "https://images.unsplash.com/photo-1464207687429-7505649dae38?w=600&h=200&fit=crop",
-    opciones: ["Reducir", "Detenerse y ceder", "Solo si viene alguien"],
-    correcta: 1,
-    dificultad: "avanzada"
+    q: "¿Qué vehículos deben tener seguro obligatorio?",
+    img: "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?q=80&w=800",
+    opts: [
+      "Solo turismos y motos",
+      "Vehículos de motor, ciclomotores y remolques pesados",
+      "Solo vehículos que circulen por autopista"
+    ],
+    ans: 1,
+    why: "Seguro obligatorio: vehículos de motor, ciclomotores y remolques/semirremolques pesados."
+  },
+  {
+    q: "Esta señal con dos coches, uno rojo y otro negro, significa:",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Spain_traffic_signal_prohibido_adelantar.png/480px-Spain_traffic_signal_prohibido_adelantar.png",
+    opts: [
+      "Prohibido adelantar",
+      "Prohibido adelantar solo a camiones",
+      "Fin de prohibición de adelantamiento"
+    ],
+    ans: 0,
+    why: "Dos coches (rojo y negro) = prohibido adelantar."
+  },
+  {
+    q: "En esta zona residencial con niños jugando, la velocidad máxima es:",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Spain_traffic_signal_zona_residencial.png/480px-Spain_traffic_signal_zona_residencial.png",
+    opts: [
+      "10 km/h",
+      "20 km/h",
+      "30 km/h"
+    ],
+    ans: 0,
+    why: "En la zona de estancia y juego la velocidad máxima es 10 km/h."
+  }
+];
+
+// Temario resumido del manual B 2026
+const MANUAL_DATA = [
+  {
+    t: "Tema 0 – Definiciones",
+    d: `- Conductor: persona que maneja el mecanismo de dirección o empuja una motocicleta.
+- Peatón: persona que transita a pie o empuja carro, bici o ciclomotor.
+- Usuario del vehículo: conductor y pasajeros.
+- Vehículos: sin motor, con motor no considerados de motor (VMP, ciclomotor, cuatriciclo ligero) y vehículos de motor.
+- Remolque ligero: hasta 750 kg MMA. Remolque no ligero: más de 750 kg MMA.`
+  },
+  {
+    t: "Tema 1 – Documentación",
+    d: `- Obligatoria: permiso de conducción, permiso de circulación y tarjeta ITV.
+- Recibo del seguro: recomendable, no obligatorio.
+- Renovación permiso de conducción: cada 10 años (cada 5 a partir de 65 años).
+- ITV: según tipo de vehículo.
+- Seguro obligatorio: vehículos de motor, ciclomotores y remolques pesados.`
+  },
+  {
+    t: "Tema 2 – Señalización de la vía",
+    d: `- Orden de prioridad: 1) Agentes, 2) Balizamiento, 3) Semáforos, 4) Señales verticales, 5) Marcas viales.
+- Agentes: brazo levantado → detenerse todos.
+- Silbato: toque corto → detenerse; toque largo → reanudar.
+- Balizamiento: conos, paneles, luces rojas fijas.`
+  },
+  {
+    t: "Tema 3 – Señales verticales",
+    d: `- Peligro: triángulos con borde rojo.
+- Reglamentación: circulares con borde rojo (prohibiciones) o fondo azul (obligaciones).
+- Ceda el paso y STOP: prioridad especial.
+- Prohibiciones: velocidad, adelantamientos, giros.`
+  },
+  {
+    t: "Tema 4 – Señales de indicación",
+    d: `- Autovía, autopista, vía para automóviles.
+- Carril VAO, carril bus/taxi/moto.
+- Zona residencial (10 km/h) y zona de coexistencia (20 km/h).`
   }
 ];
 
 /**
- * Obtiene el banco de preguntas completo
+ * Obtiene el banco de preguntas completo.
  * @returns {Array<Object>} Array de preguntas
  */
-function getBancoPreguntas() {
-  return BANCO_PREGUNTAS;
+function getQuizBank() {
+  return QUIZ_BANK;
 }
 
 /**
- * Obtiene la configuración de la aplicación
+ * Obtiene los datos del temario resumido.
+ * @returns {Array<Object>} Array de temas
+ */
+function getManualData() {
+  return MANUAL_DATA;
+}
+
+/**
+ * Obtiene la configuración de la aplicación.
  * @returns {Object} Objeto de configuración
  */
 function getConfig() {

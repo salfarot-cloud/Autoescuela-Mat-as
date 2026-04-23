@@ -1,222 +1,235 @@
 /**
- * Orquestación Principal - Autoescuela Matías
- * 
+ * Orquestación Principal - Autoescuela Matías Campus 2026
+ *
  * Controlador que:
  * 1. Usa componentes puros (components.js) para generar HTML
- * 2. Usa modelo de datos (data.js) para obtener preguntas
- * 3. Maneja eventos del usuario
- * 4. Actualiza el DOM con HTML de componentes
+ * 2. Usa modelo de datos (data.js) para obtener preguntas y temario
+ * 3. Maneja todos los eventos del usuario
+ * 4. Actualiza el DOM con el HTML generado por los componentes
  */
 
-class AutoescuelaApp {
-  /**
-   * Inicializa la aplicación con referencias DOM
-   * @param {Array<Object>} bancoPreguntas - Banco de preguntas de data.js
-   * @param {number} totalPreguntas - Total de preguntas a mostrar
-   */
-  constructor(bancoPreguntas, totalPreguntas = 10) {
-    this.bancoPreguntas = bancoPreguntas;
-    this.totalPreguntas = totalPreguntas;
-    
-    // Estado
-    this.preguntas = [];
-    this.indiceActual = 0;
-    this.respuestasCorrectas = 0;
-    this.respondida = false;
+/* ============================
+   ESTADO DE LA APLICACIÓN
+   ============================ */
 
-    // Referencias a elementos del DOM
-    this.elementosDOM = this.obtenerElementosDOM();
+let selectedQuestions = [];
+let currentIndex = 0;
+let busy = false;
+let totalQuestions = 0;
+let correctCount = 0;
 
-    // Inicializar event listeners
-    this.inicializarEventos();
+/* ============================
+   NAVEGACIÓN ENTRE PANELES
+   ============================ */
+
+/**
+ * Muestra el panel indicado y marca el botón de navegación como activo.
+ * @param {string} id - ID del panel a mostrar ('test' | 'temario')
+ * @param {HTMLElement} btn - Botón de navegación pulsado
+ */
+function showPage(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+/* ============================
+   LÓGICA DEL TEST
+   ============================ */
+
+/**
+ * Baraja un array usando el algoritmo Fisher-Yates.
+ * @param {Array} arr - Array a barajar
+ * @returns {Array} Nuevo array barajado
+ */
+function shuffleArray(arr) {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+/**
+ * Inicia el test con el número de preguntas seleccionado.
+ * Baraja el banco, toma N preguntas y carga la primera.
+ * @param {number} n - Número de preguntas a realizar
+ */
+function setQuestionCount(n) {
+  // Marcar botón activo
+  document.querySelectorAll('.selector-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.trim() === String(n));
+  });
+
+  const shuffled = shuffleArray(getQuizBank());
+  totalQuestions = Math.min(n, shuffled.length);
+  selectedQuestions = shuffled.slice(0, totalQuestions);
+  currentIndex = 0;
+  correctCount = 0;
+
+  document.getElementById('result-box').style.display = 'none';
+  document.getElementById('selector-box').style.display = 'flex';
+  document.getElementById('options-title').style.display = 'block';
+
+  loadQuestion();
+}
+
+/**
+ * Carga y renderiza la pregunta actual en pantalla.
+ * Usa createOptionsListHTML() (componente puro) para generar las opciones.
+ */
+function loadQuestion() {
+  if (!selectedQuestions.length) return;
+  busy = false;
+
+  const data = selectedQuestions[currentIndex];
+
+  // Actualizar imagen
+  const img = document.getElementById('main-img');
+  img.src = data.img;
+  img.onerror = () => {
+    img.src = 'https://placehold.co/800x600/ffb6c1/ffffff?text=Autoescuela+Matias';
+  };
+
+  // Actualizar texto de pregunta
+  document.getElementById('q-txt').innerText = data.q;
+
+  // Actualizar badges con componente puro
+  const { counter, topic } = createCounterText(currentIndex, totalQuestions);
+  document.getElementById('question-counter').textContent = counter;
+  document.getElementById('question-topic').textContent = topic;
+
+  // Resetear feedback y botones
+  document.getElementById('feedback').style.display = 'none';
+  document.getElementById('feedback').innerHTML = '';
+  document.getElementById('next-btn').style.display = 'none';
+  document.getElementById('result-box').style.display = 'none';
+
+  // Renderizar opciones con componente puro
+  const optionsBox = document.getElementById('options-box');
+  optionsBox.innerHTML = createOptionsListHTML(data.opts);
+
+  // Adjuntar eventos a las opciones ya renderizadas
+  optionsBox.querySelectorAll('.option').forEach((el, i) => {
+    el.addEventListener('click', () => handleOptionClick(i, data, optionsBox));
+  });
+}
+
+/**
+ * Maneja el click en una opción de respuesta.
+ * @param {number} selected - Índice de la opción seleccionada
+ * @param {Object} data - Objeto de la pregunta actual
+ * @param {HTMLElement} optionsBox - Contenedor de opciones
+ */
+function handleOptionClick(selected, data, optionsBox) {
+  if (busy) return;
+  busy = true;
+
+  const options = optionsBox.querySelectorAll('.option');
+
+  if (selected === data.ans) {
+    options[selected].classList.add('correct');
+    correctCount++;
+  } else {
+    options[selected].classList.add('incorrect');
+    options[data.ans].classList.add('correct');
   }
 
-  /**
-   * Obtiene referencias a elementos del DOM
-   * @private
-   * @returns {Object} Objeto con referencias a elementos
-   */
-  obtenerElementosDOM() {
-    return {
-      contenedor: document.getElementById("app-container"),
-      numeroPregunta: document.getElementById("numero-pregunta"),
-      imagenPregunta: document.getElementById("imagen-pregunta"),
-      textoPregunta: document.getElementById("texto-pregunta"),
-      opcionesContenedor: document.getElementById("contenedor-opciones"),
-      barraProgreso: document.getElementById("barra-progreso"),
-      btnSiguiente: document.getElementById("btn-siguiente"),
-      btnReiniciar: document.getElementById("btn-reiniciar"),
-      resultadoBox: document.getElementById("resultado")
-    };
-  }
+  // Mostrar feedback con componente puro
+  const feedbackEl = document.getElementById('feedback');
+  feedbackEl.innerHTML = createFeedbackHTML(data.why);
+  feedbackEl.style.display = 'block';
 
-  /**
-   * Inicializa event listeners
-   * @private
-   */
-  inicializarEventos() {
-    this.elementosDOM.btnSiguiente.addEventListener("click", () => this.siguientePregunta());
-    this.elementosDOM.btnReiniciar.addEventListener("click", () => this.iniciar());
-  }
+  document.getElementById('next-btn').style.display = 'inline-flex';
+}
 
-  /**
-   * Baraja un array usando algoritmo Fisher-Yates
-   * @private
-   * @param {Array} array - Array a barajar
-   * @returns {Array} Array barajado
-   */
-  barajar(array) {
-    const copia = [...array];
-    for (let i = copia.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [copia[i], copia[j]] = [copia[j], copia[i]];
-    }
-    return copia;
-  }
-
-  /**
-   * Inicia un nuevo test
-   */
-  iniciar() {
-    this.preguntas = this.barajar(this.bancoPreguntas).slice(0, this.totalPreguntas);
-    this.indiceActual = 0;
-    this.respuestasCorrectas = 0;
-    this.respondida = false;
-    
-    // Ocultar resultados y mostrar primera pregunta
-    this.elementosDOM.resultadoBox.style.display = "none";
-    this.cargarPregunta();
-  }
-
-  /**
-   * Carga la pregunta actual en pantalla
-   * @private
-   */
-  cargarPregunta() {
-    const pregunta = this.preguntas[this.indiceActual];
-    const numeroMostrado = this.indiceActual + 1;
-
-    // Actualizar número de pregunta
-    this.elementosDOM.numeroPregunta.textContent = `Pregunta ${numeroMostrado} de ${this.totalPreguntas}`;
-
-    // Actualizar imagen
-    this.elementosDOM.imagenPregunta.src = pregunta.imagen;
-    this.elementosDOM.imagenPregunta.alt = `Imagen para pregunta ${numeroMostrado}`;
-
-    // Actualizar texto
-    this.elementosDOM.textoPregunta.textContent = pregunta.texto;
-
-    // Generar opciones con componente puro
-    this.elementosDOM.opcionesContenedor.innerHTML = createOptionsList(pregunta.opciones);
-    
-    // Agregar event listeners a las opciones
-    this.agregarEventosOpciones(pregunta);
-
-    // Actualizar barra de progreso
-    this.actualizarProgreso();
-
-    // Reset de estado
-    this.respondida = false;
-    this.elementosDOM.btnSiguiente.disabled = true;
-  }
-
-  /**
-   * Agrega event listeners a las opciones
-   * @private
-   * @param {Object} pregunta - Pregunta actual
-   */
-  agregarEventosOpciones(pregunta) {
-    const opciones = document.querySelectorAll(".option");
-    
-    opciones.forEach((opcion, indice) => {
-      opcion.addEventListener("click", () => {
-        this.seleccionarOpcion(indice, pregunta);
-      });
-    });
-  }
-
-  /**
-   * Maneja la selección de una opción
-   * @private
-   * @param {number} indiceSeleccionado - Índice de opción seleccionada
-   * @param {Object} pregunta - Pregunta actual
-   */
-  seleccionarOpcion(indiceSeleccionado, pregunta) {
-    if (this.respondida) return;
-    
-    this.respondida = true;
-    const opciones = document.querySelectorAll(".option");
-
-    // Mostrar resultado correcto/incorrecto
-    opciones.forEach((opcion, indice) => {
-      if (indice === pregunta.correcta) {
-        opcion.classList.add("correct");
-      }
-      if (indice === indiceSeleccionado && indice !== pregunta.correcta) {
-        opcion.classList.add("incorrect");
-      }
-    });
-
-    // Contar respuesta correcta
-    if (indiceSeleccionado === pregunta.correcta) {
-      this.respuestasCorrectas++;
-    }
-
-    // Habilitar botón siguiente
-    this.elementosDOM.btnSiguiente.disabled = false;
-  }
-
-  /**
-   * Carga la siguiente pregunta
-   * @private
-   */
-  siguientePregunta() {
-    if (!this.respondida) return;
-
-    this.indiceActual++;
-    
-    if (this.indiceActual < this.totalPreguntas) {
-      this.cargarPregunta();
-    } else {
-      this.finalizarTest();
-    }
-  }
-
-  /**
-   * Actualiza la barra de progreso
-   * @private
-   */
-  actualizarProgreso() {
-    const porcentaje = ((this.indiceActual / this.totalPreguntas) * 100);
-    this.elementosDOM.barraProgreso.style.width = `${porcentaje}%`;
-  }
-
-  /**
-   * Finaliza el test y muestra resultados
-   * @private
-   */
-  finalizarTest() {
-    this.elementosDOM.barraProgreso.style.width = "100%";
-    this.elementosDOM.opcionesContenedor.innerHTML = "";
-    this.elementosDOM.textoPregunta.textContent = "Examen completado";
-    this.elementosDOM.imagenPregunta.style.display = "none";
-
-    // Generar tarjeta de resultados con componente puro
-    const resultadoHTML = createResultCard(this.respuestasCorrectas, this.totalPreguntas);
-    this.elementosDOM.resultadoBox.innerHTML = resultadoHTML;
-    this.elementosDOM.resultadoBox.style.display = "block";
-
-    // Deshabilitar botón siguiente
-    this.elementosDOM.btnSiguiente.disabled = true;
+/**
+ * Avanza a la siguiente pregunta o finaliza el test.
+ */
+function nextQuestion() {
+  currentIndex++;
+  if (currentIndex < totalQuestions) {
+    loadQuestion();
+  } else {
+    showResult();
   }
 }
 
 /**
- * Inicializa la aplicación cuando el DOM está listo
+ * Muestra el resultado final usando el componente puro createResultHTML().
  */
-document.addEventListener("DOMContentLoaded", () => {
-  const config = getConfig();
-  const banco = getBancoPreguntas();
-  const app = new AutoescuelaApp(banco, config.PREGUNTAS_TEST);
-  app.iniciar();
-});
+function showResult() {
+  const resultBox = document.getElementById('result-box');
+  resultBox.innerHTML = createResultHTML(correctCount, totalQuestions);
+  resultBox.style.display = 'block';
+  document.getElementById('next-btn').style.display = 'none';
+  document.getElementById('feedback').style.display = 'none';
+
+  // Adjuntar evento al botón de reinicio generado por el componente
+  resultBox.querySelector('.restart-btn').addEventListener('click', restartTest);
+}
+
+/**
+ * Reinicia el test y vuelve al estado inicial de selección.
+ */
+function restartTest() {
+  document.getElementById('q-txt').innerText = 'Selecciona cuántas preguntas quieres para empezar un nuevo test.';
+  document.getElementById('options-box').innerHTML = '';
+  document.getElementById('feedback').style.display = 'none';
+  document.getElementById('result-box').style.display = 'none';
+  document.getElementById('options-title').style.display = 'none';
+  document.getElementById('question-counter').textContent = 'Pregunta 0 / 0';
+  document.getElementById('question-topic').textContent = 'Tema: —';
+  document.getElementById('selector-box').style.display = 'flex';
+  document.querySelectorAll('.selector-btn').forEach(b => b.classList.remove('active'));
+}
+
+/* ============================
+   TEMARIO
+   ============================ */
+
+/**
+ * Renderiza el temario completo usando createTemarioHTML() (componente puro).
+ * Adjunta los eventos de acordeón tras insertar el HTML.
+ */
+function initTemario() {
+  const grid = document.getElementById('topic-grid');
+  grid.innerHTML = createTemarioHTML(getManualData());
+
+  // Adjuntar eventos de acordeón
+  grid.querySelectorAll('.card-header').forEach(header => {
+    header.addEventListener('click', () => {
+      const body = header.nextElementSibling;
+      const toggle = header.querySelector('.card-toggle');
+      const isVisible = body.style.display === 'block';
+      body.style.display = isVisible ? 'none' : 'block';
+      toggle.textContent = isVisible ? '+' : '−';
+    });
+  });
+}
+
+/* ============================
+   INICIALIZACIÓN
+   ============================ */
+
+/**
+ * Inicializa la aplicación: estado inicial y carga el temario.
+ */
+function init() {
+  document.getElementById('q-txt').innerText = 'Selecciona cuántas preguntas quieres para empezar tu test de Autoescuela Matías.';
+  document.getElementById('options-title').style.display = 'none';
+  document.getElementById('options-box').innerHTML = '';
+  document.getElementById('feedback').style.display = 'none';
+  document.getElementById('result-box').style.display = 'none';
+  document.getElementById('question-counter').textContent = 'Pregunta 0 / 0';
+  document.getElementById('question-topic').textContent = 'Tema: —';
+
+  // Adjuntar evento al botón "Siguiente"
+  document.getElementById('next-btn').addEventListener('click', nextQuestion);
+
+  initTemario();
+}
+
+init();

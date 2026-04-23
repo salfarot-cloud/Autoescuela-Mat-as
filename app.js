@@ -1,131 +1,222 @@
-// Lógica de la aplicación de autoescuela
+/**
+ * Orquestación Principal - Autoescuela Matías
+ * 
+ * Controlador que:
+ * 1. Usa componentes puros (components.js) para generar HTML
+ * 2. Usa modelo de datos (data.js) para obtener preguntas
+ * 3. Maneja eventos del usuario
+ * 4. Actualiza el DOM con HTML de componentes
+ */
+
 class AutoescuelaApp {
-  constructor(bancoPreguntas, NUM = 10) {
+  /**
+   * Inicializa la aplicación con referencias DOM
+   * @param {Array<Object>} bancoPreguntas - Banco de preguntas de data.js
+   * @param {number} totalPreguntas - Total de preguntas a mostrar
+   */
+  constructor(bancoPreguntas, totalPreguntas = 10) {
     this.bancoPreguntas = bancoPreguntas;
-    this.NUM = NUM;
+    this.totalPreguntas = totalPreguntas;
+    
+    // Estado
     this.preguntas = [];
-    this.indice = 0;
-    this.correctas = 0;
+    this.indiceActual = 0;
+    this.respuestasCorrectas = 0;
     this.respondida = false;
 
     // Referencias a elementos del DOM
-    this.numeroPreguntaEl = document.getElementById("numero-pregunta");
-    this.imagenPreguntaEl = document.getElementById("imagen-pregunta");
-    this.textoPreguntaEl = document.getElementById("texto-pregunta");
-    this.contenedorOpcionesEl = document.getElementById("contenedor-opciones");
-    this.barraProgreso = document.getElementById("barra-progreso");
-    this.resultadoBox = document.getElementById("resultado");
-    this.textoResultado = document.getElementById("texto-resultado");
-    this.badgeNivel = document.getElementById("badge-nivel");
-    this.textoNivel = document.getElementById("texto-nivel");
+    this.elementosDOM = this.obtenerElementosDOM();
 
+    // Inicializar event listeners
     this.inicializarEventos();
   }
 
+  /**
+   * Obtiene referencias a elementos del DOM
+   * @private
+   * @returns {Object} Objeto con referencias a elementos
+   */
+  obtenerElementosDOM() {
+    return {
+      contenedor: document.getElementById("app-container"),
+      numeroPregunta: document.getElementById("numero-pregunta"),
+      imagenPregunta: document.getElementById("imagen-pregunta"),
+      textoPregunta: document.getElementById("texto-pregunta"),
+      opcionesContenedor: document.getElementById("contenedor-opciones"),
+      barraProgreso: document.getElementById("barra-progreso"),
+      btnSiguiente: document.getElementById("btn-siguiente"),
+      btnReiniciar: document.getElementById("btn-reiniciar"),
+      resultadoBox: document.getElementById("resultado")
+    };
+  }
+
+  /**
+   * Inicializa event listeners
+   * @private
+   */
   inicializarEventos() {
-    document.getElementById("btn-siguiente").onclick = () => this.siguientePregunta();
-    document.getElementById("btn-reiniciar").onclick = () => this.iniciar();
+    this.elementosDOM.btnSiguiente.addEventListener("click", () => this.siguientePregunta());
+    this.elementosDOM.btnReiniciar.addEventListener("click", () => this.iniciar());
   }
 
-  barajar(arr) {
-    return arr
-      .map((v) => ({ v, o: Math.random() }))
-      .sort((a, b) => a.o - b.o)
-      .map((x) => x.v);
+  /**
+   * Baraja un array usando algoritmo Fisher-Yates
+   * @private
+   * @param {Array} array - Array a barajar
+   * @returns {Array} Array barajado
+   */
+  barajar(array) {
+    const copia = [...array];
+    for (let i = copia.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copia[i], copia[j]] = [copia[j], copia[i]];
+    }
+    return copia;
   }
 
+  /**
+   * Inicia un nuevo test
+   */
   iniciar() {
-    this.preguntas = this.barajar(this.bancoPreguntas).slice(0, this.NUM);
-    this.indice = 0;
-    this.correctas = 0;
-    this.resultadoBox.style.display = "none";
-    this.barraProgreso.style.width = "0%";
+    this.preguntas = this.barajar(this.bancoPreguntas).slice(0, this.totalPreguntas);
+    this.indiceActual = 0;
+    this.respuestasCorrectas = 0;
+    this.respondida = false;
+    
+    // Ocultar resultados y mostrar primera pregunta
+    this.elementosDOM.resultadoBox.style.display = "none";
     this.cargarPregunta();
   }
 
+  /**
+   * Carga la pregunta actual en pantalla
+   * @private
+   */
   cargarPregunta() {
-    const pregunta = this.preguntas[this.indice];
-    this.numeroPreguntaEl.textContent = `Pregunta ${this.indice + 1} de ${this.NUM}`;
-    this.imagenPreguntaEl.src = pregunta.imagen;
-    this.imagenPreguntaEl.alt = `Imagen para la pregunta ${this.indice + 1}`;
-    this.textoPreguntaEl.textContent = pregunta.texto;
-    this.contenedorOpcionesEl.innerHTML = "";
+    const pregunta = this.preguntas[this.indiceActual];
+    const numeroMostrado = this.indiceActual + 1;
+
+    // Actualizar número de pregunta
+    this.elementosDOM.numeroPregunta.textContent = `Pregunta ${numeroMostrado} de ${this.totalPreguntas}`;
+
+    // Actualizar imagen
+    this.elementosDOM.imagenPregunta.src = pregunta.imagen;
+    this.elementosDOM.imagenPregunta.alt = `Imagen para pregunta ${numeroMostrado}`;
+
+    // Actualizar texto
+    this.elementosDOM.textoPregunta.textContent = pregunta.texto;
+
+    // Generar opciones con componente puro
+    this.elementosDOM.opcionesContenedor.innerHTML = createOptionsList(pregunta.opciones);
+    
+    // Agregar event listeners a las opciones
+    this.agregarEventosOpciones(pregunta);
+
+    // Actualizar barra de progreso
+    this.actualizarProgreso();
+
+    // Reset de estado
     this.respondida = false;
-
-    pregunta.opciones.forEach((opcion, i) => {
-      const label = document.createElement("label");
-      label.className = "option";
-      label.innerHTML = `<input type="radio" name="r" />${opcion}`;
-
-      label.onclick = () => this.seleccionarOpcion(i, pregunta);
-
-      this.contenedorOpcionesEl.appendChild(label);
-    });
-
-    this.actualizarBarraProgreso();
+    this.elementosDOM.btnSiguiente.disabled = true;
   }
 
-  seleccionarOpcion(indiceOpcion, pregunta) {
-    if (this.respondida) return;
-    this.respondida = true;
-
+  /**
+   * Agrega event listeners a las opciones
+   * @private
+   * @param {Object} pregunta - Pregunta actual
+   */
+  agregarEventosOpciones(pregunta) {
     const opciones = document.querySelectorAll(".option");
-    opciones.forEach((label, idx) => {
-      if (idx === pregunta.correcta) {
-        label.classList.add("correct");
+    
+    opciones.forEach((opcion, indice) => {
+      opcion.addEventListener("click", () => {
+        this.seleccionarOpcion(indice, pregunta);
+      });
+    });
+  }
+
+  /**
+   * Maneja la selección de una opción
+   * @private
+   * @param {number} indiceSeleccionado - Índice de opción seleccionada
+   * @param {Object} pregunta - Pregunta actual
+   */
+  seleccionarOpcion(indiceSeleccionado, pregunta) {
+    if (this.respondida) return;
+    
+    this.respondida = true;
+    const opciones = document.querySelectorAll(".option");
+
+    // Mostrar resultado correcto/incorrecto
+    opciones.forEach((opcion, indice) => {
+      if (indice === pregunta.correcta) {
+        opcion.classList.add("correct");
       }
-      if (idx === indiceOpcion && idx !== pregunta.correcta) {
-        label.classList.add("incorrect");
+      if (indice === indiceSeleccionado && indice !== pregunta.correcta) {
+        opcion.classList.add("incorrect");
       }
     });
 
-    if (indiceOpcion === pregunta.correcta) {
-      this.correctas++;
+    // Contar respuesta correcta
+    if (indiceSeleccionado === pregunta.correcta) {
+      this.respuestasCorrectas++;
     }
+
+    // Habilitar botón siguiente
+    this.elementosDOM.btnSiguiente.disabled = false;
   }
 
+  /**
+   * Carga la siguiente pregunta
+   * @private
+   */
   siguientePregunta() {
     if (!this.respondida) return;
 
-    this.indice++;
-    if (this.indice < this.NUM) {
+    this.indiceActual++;
+    
+    if (this.indiceActual < this.totalPreguntas) {
       this.cargarPregunta();
     } else {
-      this.finalizar();
+      this.finalizarTest();
     }
   }
 
-  actualizarBarraProgreso() {
-    this.barraProgreso.style.width = `${(this.indice / this.NUM) * 100}%`;
+  /**
+   * Actualiza la barra de progreso
+   * @private
+   */
+  actualizarProgreso() {
+    const porcentaje = ((this.indiceActual / this.totalPreguntas) * 100);
+    this.elementosDOM.barraProgreso.style.width = `${porcentaje}%`;
   }
 
-  finalizar() {
-    this.barraProgreso.style.width = "100%";
-    this.contenedorOpcionesEl.innerHTML = "";
-    this.textoPreguntaEl.textContent = "Examen completado";
-    this.imagenPreguntaEl.style.display = "none";
+  /**
+   * Finaliza el test y muestra resultados
+   * @private
+   */
+  finalizarTest() {
+    this.elementosDOM.barraProgreso.style.width = "100%";
+    this.elementosDOM.opcionesContenedor.innerHTML = "";
+    this.elementosDOM.textoPregunta.textContent = "Examen completado";
+    this.elementosDOM.imagenPregunta.style.display = "none";
 
-    this.resultadoBox.style.display = "block";
-    this.textoResultado.innerHTML = `Has acertado <strong>${this.correctas}</strong> de <strong>${this.NUM}</strong>.`;
+    // Generar tarjeta de resultados con componente puro
+    const resultadoHTML = createResultCard(this.respuestasCorrectas, this.totalPreguntas);
+    this.elementosDOM.resultadoBox.innerHTML = resultadoHTML;
+    this.elementosDOM.resultadoBox.style.display = "block";
 
-    if (this.correctas <= 4) {
-      this.badgeNivel.className = "badge badge-basic";
-      this.badgeNivel.textContent = "Nivel básico";
-      this.textoNivel.textContent = "Necesitas repasar un poco más.";
-    } else if (this.correctas <= 8) {
-      this.badgeNivel.className = "badge badge-mid";
-      this.badgeNivel.textContent = "Nivel intermedio";
-      this.textoNivel.textContent = "Buen trabajo, vas por buen camino.";
-    } else {
-      this.badgeNivel.className = "badge badge-advanced";
-      this.badgeNivel.textContent = "Nivel avanzado";
-      this.textoNivel.textContent = "Excelente, estás muy preparado.";
-    }
+    // Deshabilitar botón siguiente
+    this.elementosDOM.btnSiguiente.disabled = true;
   }
 }
 
-// Inicializar la aplicación cuando el DOM esté listo
+/**
+ * Inicializa la aplicación cuando el DOM está listo
+ */
 document.addEventListener("DOMContentLoaded", () => {
-  const app = new AutoescuelaApp(bancoPreguntas, 10);
+  const config = getConfig();
+  const banco = getBancoPreguntas();
+  const app = new AutoescuelaApp(banco, config.PREGUNTAS_TEST);
   app.iniciar();
 });

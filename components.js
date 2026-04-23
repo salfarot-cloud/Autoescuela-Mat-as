@@ -1,132 +1,105 @@
 /**
- * Componentes Puros - Autoescuela Matías
- * 
- * Estos componentes devuelven strings HTML sin modificar el DOM.
- * Son funciones puras: mismo input = mismo output, sin efectos secundarios.
+ * Componentes Puros - Autoescuela Matías Campus 2026
+ *
+ * Todas las funciones son PURAS: reciben datos y devuelven strings de HTML.
+ * NO modifican el DOM directamente. Sin efectos secundarios.
  */
 
 /**
- * Crea el HTML de una tarjeta de pregunta
- * @param {Object} pregunta - Objeto con {texto, imagen, opciones, correcta}
- * @param {number} numero - Número de pregunta actual (1-10)
- * @returns {string} HTML de la pregunta
+ * Crea el HTML de una opción de respuesta.
+ * @param {string} texto - Texto de la opción
+ * @param {number} index - Índice de la opción
+ * @returns {string} HTML de la opción
  */
-function createQuestionCard(pregunta, numero) {
-  return `
-    <div class="question-box">
-      <div class="question-number">Pregunta ${numero} de 10</div>
-      <img 
-        src="${pregunta.imagen}" 
-        alt="Imagen para pregunta ${numero}" 
-        class="question-image"
-        loading="lazy"
-      />
-      <div class="question-text">${pregunta.texto}</div>
-    </div>
-  `;
+function createOptionHTML(texto, index) {
+  return `<div class="option" data-index="${index}">${texto}</div>`;
 }
 
 /**
- * Crea el HTML de las opciones de respuesta
- * @param {Array<string>} opciones - Lista de opciones
- * @param {number} correcta - Índice de respuesta correcta
- * @returns {string} HTML con opciones
+ * Crea el HTML de la lista completa de opciones.
+ * @param {Array<string>} opts - Array de opciones de respuesta
+ * @returns {string} HTML con todas las opciones
  */
-function createOptionsList(opciones, correcta = null) {
-  return opciones
-    .map((opcion, indice) => `
-      <label class="option" data-index="${indice}">
-        <input type="radio" name="respuesta" value="${indice}" />
-        <span>${opcion}</span>
-      </label>
-    `)
-    .join('');
+function createOptionsListHTML(opts) {
+  return opts.map((o, i) => createOptionHTML(o, i)).join('');
 }
 
 /**
- * Crea la barra de progreso
- * @param {number} actual - Pregunta actual (0-9)
+ * Crea el HTML del cuadro de feedback/explicación.
+ * @param {string} why - Texto de la explicación
+ * @returns {string} HTML del feedback
+ */
+function createFeedbackHTML(why) {
+  return `<strong>Explicación:</strong> ${why}`;
+}
+
+/**
+ * Crea el HTML del contador de pregunta y tema.
+ * @param {number} current - Índice actual (0-based)
  * @param {number} total - Total de preguntas
- * @returns {string} HTML de barra de progreso
+ * @returns {{ counter: string, topic: string }} Textos para los badges
  */
-function createProgressBar(actual, total) {
-  const porcentaje = ((actual / total) * 100).toFixed(0);
+function createCounterText(current, total) {
+  return {
+    counter: `Pregunta ${current + 1} / ${total}`,
+    topic: 'Tema: Manual B 2026'
+  };
+}
+
+/**
+ * Determina el nivel según el porcentaje de aciertos.
+ * @param {number} scorePercent - Porcentaje de aciertos (0-100)
+ * @returns {string} Nombre del nivel
+ */
+function getLevelText(scorePercent) {
+  if (scorePercent <= 25) return 'Básico';
+  if (scorePercent <= 60) return 'Medio';
+  if (scorePercent <= 85) return 'Avanzado';
+  return 'Experto';
+}
+
+/**
+ * Crea el HTML de la caja de resultados finales.
+ * @param {number} correctCount - Número de respuestas correctas
+ * @param {number} total - Total de preguntas realizadas
+ * @returns {string} HTML del bloque de resultados
+ */
+function createResultHTML(correctCount, total) {
+  const percent = Math.round((correctCount / total) * 100);
+  const level = getLevelText(percent);
   return `
-    <div class="progress-bar">
-      <div class="progress-fill" style="width: ${porcentaje}%"></div>
+    <div class="result-title">¡Test finalizado en Autoescuela Matías!</div>
+    <div>Has acertado <strong>${correctCount}</strong> de <strong>${total}</strong> preguntas.</div>
+    <div>Porcentaje de aciertos: <strong>${percent}%</strong>.</div>
+    <div>Nivel obtenido: <strong>${level}</strong>.</div>
+    <br>
+    <button class="selector-btn restart-btn" style="padding:8px 14px;">Reiniciar test</button>
+  `;
+}
+
+/**
+ * Crea el HTML de una tarjeta de tema del temario.
+ * @param {Object} tema - Objeto con { t: título, d: descripción }
+ * @param {number} index - Índice del tema (para identificación)
+ * @returns {string} HTML de la tarjeta
+ */
+function createTemarioCardHTML(tema, index) {
+  return `
+    <div class="card">
+      <div class="card-header" data-card-index="${index}">
+        <h3>${tema.t}</h3>
+        <span class="card-toggle">+</span>
+      </div>
+      <div class="card-body">${tema.d.trim()}</div>
     </div>
   `;
 }
 
 /**
- * Crea la tarjeta de resultados finales
- * @param {number} correctas - Cantidad de respuestas correctas
- * @param {number} total - Total de preguntas
- * @returns {string} HTML de resultados
+ * Crea el HTML completo del panel de temario.
+ * @param {Array<Object>} manualData - Array de temas del manual
+ * @returns {string} HTML de todas las tarjetas del temario
  */
-function createResultCard(correctas, total) {
-  let badgeClase = 'badge-basic';
-  let badgeTexto = 'Nivel básico';
-  let mensajeNivel = 'Necesitas repasar un poco más.';
-
-  if (correctas > 8) {
-    badgeClase = 'badge-advanced';
-    badgeTexto = 'Nivel avanzado';
-    mensajeNivel = 'Excelente, estás muy preparado.';
-  } else if (correctas > 4) {
-    badgeClase = 'badge-mid';
-    badgeTexto = 'Nivel intermedio';
-    mensajeNivel = 'Buen trabajo, vas por buen camino.';
-  }
-
-  return `
-    <div class="result-box">
-      <div id="texto-resultado">
-        Has acertado <strong>${correctas}</strong> de <strong>${total}</strong>.
-      </div>
-      <div id="badge-nivel" class="badge ${badgeClase}">
-        ${badgeTexto}
-      </div>
-      <div id="texto-nivel" style="margin-top: 6px;">
-        ${mensajeNivel}
-      </div>
-    </div>
-  `;
-}
-
-/**
- * Crea el botón "Siguiente"
- * @returns {string} HTML del botón
- */
-function createNextButton() {
-  return `
-    <button class="btn btn-primary" id="btn-siguiente" disabled>
-      Siguiente →
-    </button>
-  `;
-}
-
-/**
- * Crea el botón "Reiniciar"
- * @returns {string} HTML del botón
- */
-function createRestartButton() {
-  return `
-    <button class="btn btn-ghost" id="btn-reiniciar">
-      Reiniciar
-    </button>
-  `;
-}
-
-/**
- * Crea el contenedor de botones
- * @returns {string} HTML de botones
- */
-function createButtonsContainer() {
-  return `
-    <div class="buttons-container">
-      ${createRestartButton()}
-      ${createNextButton()}
-    </div>
-  `;
+function createTemarioHTML(manualData) {
+  return manualData.map((m, i) => createTemarioCardHTML(m, i)).join('');
 }

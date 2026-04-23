@@ -3,7 +3,7 @@
  *
  * Controlador que:
  * 1. Usa componentes puros (components.js) para generar HTML
- * 2. Usa modelo de datos (data.js) para obtener preguntas y temario
+ * 2. Usa modelo de datos (data.js) para obtener preguntas, temario e info de la escuela
  * 3. Maneja todos los eventos del usuario
  * 4. Actualiza el DOM con el HTML generado por los componentes
  */
@@ -24,7 +24,7 @@ let correctCount = 0;
 
 /**
  * Muestra el panel indicado y marca el botón de navegación como activo.
- * @param {string} id - ID del panel a mostrar ('test' | 'temario')
+ * @param {string} id - ID del panel a mostrar
  * @param {HTMLElement} btn - Botón de navegación pulsado
  */
 function showPage(id, btn) {
@@ -54,11 +54,9 @@ function shuffleArray(arr) {
 
 /**
  * Inicia el test con el número de preguntas seleccionado.
- * Baraja el banco, toma N preguntas y carga la primera.
  * @param {number} n - Número de preguntas a realizar
  */
 function setQuestionCount(n) {
-  // Marcar botón activo
   document.querySelectorAll('.selector-btn').forEach(b => {
     b.classList.toggle('active', b.textContent.trim() === String(n));
   });
@@ -77,8 +75,8 @@ function setQuestionCount(n) {
 }
 
 /**
- * Carga y renderiza la pregunta actual en pantalla.
- * Usa createOptionsListHTML() (componente puro) para generar las opciones.
+ * Carga y renderiza la pregunta actual.
+ * Usa createOptionsListHTML() para generar las opciones.
  */
 function loadQuestion() {
   if (!selectedQuestions.length) return;
@@ -86,32 +84,26 @@ function loadQuestion() {
 
   const data = selectedQuestions[currentIndex];
 
-  // Actualizar imagen
   const img = document.getElementById('main-img');
   img.src = data.img;
   img.onerror = () => {
     img.src = 'https://placehold.co/800x600/ffb6c1/ffffff?text=Autoescuela+Matias';
   };
 
-  // Actualizar texto de pregunta
   document.getElementById('q-txt').innerText = data.q;
 
-  // Actualizar badges con componente puro
   const { counter, topic } = createCounterText(currentIndex, totalQuestions);
   document.getElementById('question-counter').textContent = counter;
   document.getElementById('question-topic').textContent = topic;
 
-  // Resetear feedback y botones
   document.getElementById('feedback').style.display = 'none';
   document.getElementById('feedback').innerHTML = '';
   document.getElementById('next-btn').style.display = 'none';
   document.getElementById('result-box').style.display = 'none';
 
-  // Renderizar opciones con componente puro
   const optionsBox = document.getElementById('options-box');
   optionsBox.innerHTML = createOptionsListHTML(data.opts);
 
-  // Adjuntar eventos a las opciones ya renderizadas
   optionsBox.querySelectorAll('.option').forEach((el, i) => {
     el.addEventListener('click', () => handleOptionClick(i, data, optionsBox));
   });
@@ -128,7 +120,6 @@ function handleOptionClick(selected, data, optionsBox) {
   busy = true;
 
   const options = optionsBox.querySelectorAll('.option');
-
   if (selected === data.ans) {
     options[selected].classList.add('correct');
     correctCount++;
@@ -137,11 +128,9 @@ function handleOptionClick(selected, data, optionsBox) {
     options[data.ans].classList.add('correct');
   }
 
-  // Mostrar feedback con componente puro
   const feedbackEl = document.getElementById('feedback');
   feedbackEl.innerHTML = createFeedbackHTML(data.why);
   feedbackEl.style.display = 'block';
-
   document.getElementById('next-btn').style.display = 'inline-flex';
 }
 
@@ -158,7 +147,7 @@ function nextQuestion() {
 }
 
 /**
- * Muestra el resultado final usando el componente puro createResultHTML().
+ * Muestra el resultado final usando createResultHTML().
  */
 function showResult() {
   const resultBox = document.getElementById('result-box');
@@ -166,13 +155,11 @@ function showResult() {
   resultBox.style.display = 'block';
   document.getElementById('next-btn').style.display = 'none';
   document.getElementById('feedback').style.display = 'none';
-
-  // Adjuntar evento al botón de reinicio generado por el componente
   resultBox.querySelector('.restart-btn').addEventListener('click', restartTest);
 }
 
 /**
- * Reinicia el test y vuelve al estado inicial de selección.
+ * Reinicia el test volviendo al estado de selección.
  */
 function restartTest() {
   document.getElementById('q-txt').innerText = 'Selecciona cuántas preguntas quieres para empezar un nuevo test.';
@@ -191,14 +178,12 @@ function restartTest() {
    ============================ */
 
 /**
- * Renderiza el temario completo usando createTemarioHTML() (componente puro).
- * Adjunta los eventos de acordeón tras insertar el HTML.
+ * Renderiza el temario usando createTemarioHTML() y adjunta eventos de acordeón.
  */
 function initTemario() {
   const grid = document.getElementById('topic-grid');
   grid.innerHTML = createTemarioHTML(getManualData());
 
-  // Adjuntar eventos de acordeón
   grid.querySelectorAll('.card-header').forEach(header => {
     header.addEventListener('click', () => {
       const body = header.nextElementSibling;
@@ -211,13 +196,42 @@ function initTemario() {
 }
 
 /* ============================
+   INICIO (HOME)
+   ============================ */
+
+/**
+ * Renderiza la página de inicio usando createHomeHTML() y adjunta el evento del CTA.
+ */
+function initHome() {
+  const container = document.getElementById('home-content');
+  container.innerHTML = createHomeHTML(getSchoolInfo());
+
+  container.querySelector('#home-cta-btn').addEventListener('click', () => {
+    showPage('test', document.getElementById('nav-test'));
+  });
+}
+
+/* ============================
+   LOCALIZACIÓN
+   ============================ */
+
+/**
+ * Renderiza la página de localización usando createLocalizacionHTML().
+ */
+function initLocalizacion() {
+  const container = document.getElementById('localizacion-content');
+  container.innerHTML = createLocalizacionHTML(getSchoolInfo());
+}
+
+/* ============================
    INICIALIZACIÓN
    ============================ */
 
 /**
- * Inicializa la aplicación: estado inicial y carga el temario.
+ * Inicializa la aplicación completa.
  */
 function init() {
+  // Estado inicial del test
   document.getElementById('q-txt').innerText = 'Selecciona cuántas preguntas quieres para empezar tu test de Autoescuela Matías.';
   document.getElementById('options-title').style.display = 'none';
   document.getElementById('options-box').innerHTML = '';
@@ -225,11 +239,12 @@ function init() {
   document.getElementById('result-box').style.display = 'none';
   document.getElementById('question-counter').textContent = 'Pregunta 0 / 0';
   document.getElementById('question-topic').textContent = 'Tema: —';
-
-  // Adjuntar evento al botón "Siguiente"
   document.getElementById('next-btn').addEventListener('click', nextQuestion);
 
+  // Inicializar todas las páginas
+  initHome();
   initTemario();
+  initLocalizacion();
 }
 
 init();

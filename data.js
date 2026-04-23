@@ -1,9 +1,9 @@
 /**
  * Modelo de Datos - Autoescuela Matías Campus 2026
  *
- * Banco de preguntas y temario resumido.
- * Cada pregunta contiene: q (texto), img (url), opts (opciones), ans (índice correcto), why (explicación).
- * Cada tema contiene: t (título), d (descripción).
+ * Banco de preguntas, temario resumido e información de la autoescuela.
+ * Cada pregunta: q (texto), img (url), opts (opciones), ans (índice correcto), why (explicación).
+ * Cada tema: t (título), d (descripción).
  */
 
 // Configuración global de la app
@@ -187,6 +187,34 @@ const MANUAL_DATA = [
   }
 ];
 
+// Información institucional de la autoescuela
+const SCHOOL_INFO = {
+  nombre: 'Autoescuela Matías',
+  tagline: 'Tu camino al volante comienza aquí',
+  descripcion: 'Más de 15 años formando conductores responsables en Málaga con el método más moderno y eficaz. Aprobamos con el campus digital 2026.',
+  stats: [
+    { valor: '15+', etiqueta: 'Años de experiencia' },
+    { valor: '98%', etiqueta: 'Tasa de aprobados' },
+    { valor: '2.000+', etiqueta: 'Alumnos formados' }
+  ],
+  servicios: [
+    { icono: '📝', titulo: 'Tests Online', desc: 'Practica con nuestro campus digital disponible las 24h del día.' },
+    { icono: '🚗', titulo: 'Clases Prácticas', desc: 'Vehículos modernos y profesores certificados y pacientes.' },
+    { icono: '📚', titulo: 'Temario Resumido', desc: 'Material adaptado y simplificado al manual oficial B 2026.' },
+    { icono: '🏆', titulo: 'Alta Tasa de Éxito', desc: 'El 98% de nuestros alumnos aprueban a la primera.' }
+  ],
+  contacto: {
+    direccion: 'Calle Alcalá, 25, 29010 Málaga',
+    telefono: '+34 952 123 456',
+    email: 'info@autoescuelamatias.es',
+    horario: [
+      { dia: 'Lunes — Viernes', horas: '09:00 – 14:00 / 16:00 – 20:00' },
+      { dia: 'Sábado', horas: '09:00 – 13:00' },
+      { dia: 'Domingo', horas: 'Cerrado' }
+    ]
+  }
+};
+
 /**
  * Obtiene el banco de preguntas completo.
  * @returns {Array<Object>} Array de preguntas
@@ -209,4 +237,12 @@ function getManualData() {
  */
 function getConfig() {
   return CONFIG;
+}
+
+/**
+ * Obtiene la información institucional de la autoescuela.
+ * @returns {Object} Objeto con nombre, stats, servicios y contacto
+ */
+function getSchoolInfo() {
+  return SCHOOL_INFO;
 }

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Autoescuela Matías — Campus 2026. Test de conducción con temario resumido del permiso B." />
+    <meta name="description" content="Autoescuela Matías — Campus 2026. Tu camino al volante con el método más moderno." />
     <title>Autoescuela Matías — Campus 2026</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -13,25 +13,38 @@
     <!-- SIDEBAR DE NAVEGACIÓN -->
     <aside class="sidebar">
       <div class="brand">
+        <span class="brand-logo">🚗</span>
         <h1>AUTOESCUELA MATÍAS</h1>
         <p>MÉTODO RESUMIDO 2026</p>
       </div>
+      
       <nav class="nav-group">
-        <button class="nav-btn active" id="nav-test" onclick="showPage('test', this)">📝 Realizar Test</button>
+        <button class="nav-btn active" id="nav-home" onclick="showPage('home', this)">🏠 Inicio</button>
+        <button class="nav-btn" id="nav-test" onclick="showPage('test', this)">📝 Realizar Test</button>
         <button class="nav-btn" id="nav-temario" onclick="showPage('temario', this)">📚 Temario Resumido</button>
+        <button class="nav-btn" id="nav-localizacion" onclick="showPage('localizacion', this)">📍 Localización</button>
       </nav>
+
+      <div class="sidebar-footer">
+        © 2026 Autoescuela Matías
+      </div>
     </aside>
 
     <!-- CONTENIDO PRINCIPAL -->
     <main class="main-content">
 
+      <!-- PANEL INICIO -->
+      <section id="home" class="panel active">
+        <div id="home-content"></div>
+      </section>
+
       <!-- PANEL TEST -->
-      <section id="test" class="panel active">
+      <section id="test" class="panel">
         <div class="test-grid">
 
           <!-- Imagen de la pregunta -->
           <div class="image-container">
-            <img id="main-img" src="https://images.unsplash.com/photo-1511919884226-fd3cad34687c?q=80&w=800" alt="Imagen relacionada con la pregunta actual" />
+            <img id="main-img" src="https://images.unsplash.com/photo-1511919884226-fd3cad34687c?q=80&w=800" alt="Imagen del test" />
           </div>
 
           <!-- Área de pregunta y opciones -->
@@ -45,13 +58,11 @@
 
             <!-- Selector de cantidad de preguntas -->
             <div class="selector-box" id="selector-box">
-              <span class="selector-label">Selecciona cuántas preguntas quieres:</span>
+              <span class="selector-label">¿Cuántas preguntas quieres?</span>
               <button class="selector-btn" onclick="setQuestionCount(5)">5</button>
               <button class="selector-btn" onclick="setQuestionCount(10)">10</button>
               <button class="selector-btn" onclick="setQuestionCount(20)">20</button>
               <button class="selector-btn" onclick="setQuestionCount(30)">30</button>
-              <button class="selector-btn" onclick="setQuestionCount(40)">40</button>
-              <button class="selector-btn" onclick="setQuestionCount(50)">50</button>
             </div>
 
             <!-- Texto de la pregunta -->
@@ -60,13 +71,13 @@
             <!-- Título de opciones -->
             <div class="options-title" id="options-title" style="display:none;">Elige una respuesta:</div>
 
-            <!-- Contenedor de opciones (generado por components.js) -->
+            <!-- Contenedor de opciones -->
             <div id="options-box"></div>
 
             <!-- Feedback / Explicación -->
             <div id="feedback"></div>
 
-            <!-- Caja de resultados finales (generado por components.js) -->
+            <!-- Caja de resultados finales -->
             <div id="result-box" class="result-box" style="display:none;"></div>
 
             <!-- Botón siguiente -->
@@ -82,13 +93,17 @@
           <h2>Contenido del Manual 2026 (Resumido)</h2>
           <p>Basado en el manual resumido del permiso B 2026.</p>
         </div>
-        <!-- Tarjetas generadas por components.js + app.js -->
         <div id="topic-grid"></div>
+      </section>
+
+      <!-- PANEL LOCALIZACIÓN -->
+      <section id="localizacion" class="panel">
+        <div id="localizacion-content"></div>
       </section>
 
     </main>
 
-    <!-- Módulos JavaScript en orden correcto (Model → View → Controller) -->
+    <!-- Scripts -->
     <script src="data.js"></script>
     <script src="components.js"></script>
     <script src="app.js"></script>

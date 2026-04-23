@@ -184,6 +184,76 @@ const MANUAL_DATA = [
     d: `- Autovía, autopista, vía para automóviles.
 - Carril VAO, carril bus/taxi/moto.
 - Zona residencial (10 km/h) y zona de coexistencia (20 km/h).`
+  },
+  {
+    t: "Tema 5 – Marcas viales",
+    d: `- Continuas: separan sentidos opuestos, no se pueden cruzar.
+- Discontinuas: separan carriles del mismo sentido.
+- Líneas longitudinales: amarillas (opuestos), blancas (mismo sentido).
+- Marcas transversales: pasos de peatones, STOP, ceda el paso.`
+  },
+  {
+    t: "Tema 6 – Normas de circulación",
+    d: `- Sentido de circulación: derecha en vías de doble sentido.
+- Adelantamiento: por la izquierda, salvo excepciones.
+- Giro: indicar con antelación, ceder paso según corresponda.
+- Distancia de seguridad: al menos 2 segundos del vehículo delantero.`
+  },
+  {
+    t: "Tema 7 – Velocidades",
+    d: `- General: 50 km/h en poblado, 90 km/h fuera, 120 km/h autopista.
+- Adaptar a condiciones: meteorológicas, tráfico, vehículo, conductor.
+- Reducciones: curvas, cambios de rasante, zonas escolares.
+- Multas por exceso: graves a partir de 30 km/h sobre límite.`
+  },
+  {
+    t: "Tema 8 – Adelantamientos",
+    d: `- Prohibidos: en curvas, cambios de rasante, intersecciones, pasos a nivel.
+- Obligatorios: cuando vehículo lento obstruye.
+- Procedimiento: comprobar visibilidad, indicar maniobra, acelerar y volver al carril.
+- Distancia mínima: 1,5 metros al adelantar.`
+  },
+  {
+    t: "Tema 9 – Prioridad de paso",
+    d: `- Intersecciones sin señales: vehículos por la derecha tienen prioridad.
+- Incorporaciones: ceder paso al tráfico de la vía principal.
+- Glorietas: prioridad al tráfico circular.
+- Peatones: siempre tienen prioridad en pasos señalizados.`
+  },
+  {
+    t: "Tema 10 – Estacionamiento",
+    d: `- Prohibido: en doble fila, aceras, pasos de peatones, curvas, túneles.
+- Permitido: en batería, en línea, en aparcamientos señalizados.
+- Zona azul: pago por tiempo limitado.
+- Vehículos de minusválidos: plazas reservadas y gratuitas.`
+  },
+  {
+    t: "Tema 11 – Conducción segura",
+    d: `- Factores de riesgo: velocidad, alcohol, drogas, fatiga, distracciones.
+- Conducción defensiva: anticipar situaciones, mantener distancia.
+- Condiciones meteorológicas: lluvia, niebla, hielo afectan adherencia.
+- Mantenimiento: neumáticos, frenos, luces, líquidos.`
+  },
+  {
+    t: "Tema 12 – Primeros auxilios",
+    d: `- Evaluación inicial: estado de consciencia, respiración, hemorragias.
+- Posición lateral de seguridad: para víctimas inconscientes.
+- RCP: 30 compresiones + 2 ventilaciones.
+- Triángulo de preseñalización: colocar a 50 metros en autopista.`
+  },
+  {
+    t: "Tema 13 – Mecánica básica",
+    d: `- Motor: gasolina vs diésel, refrigeración, lubricación.
+- Transmisión: embrague, caja de cambios, diferencial.
+- Frenos: tambor vs disco, ABS previene bloqueo.
+- Electricidad: batería, alternador, luces, arranque.`
+  },
+  {
+    t: "Tema 14 – Medio ambiente",
+    d: `- Contaminación: CO2, NOx, partículas afectan calidad del aire.
+- Conducción eficiente: acelerar suavemente, mantener velocidad constante.
+- Etiquetado ambiental: clasificación por emisiones (A-B-C-ECO).
+- Zonas de bajas emisiones: restricciones por etiqueta.`
   }
 ];
 

@@ -241,10 +241,8 @@ function init() {
   document.getElementById('question-topic').textContent = 'Tema: —';
   document.getElementById('next-btn').addEventListener('click', nextQuestion);
 
-  // Inicializar todas las páginas
-  initHome();
+  // Inicializar solo las páginas que existen
   initTemario();
-  initLocalizacion();
 }
 
 init();

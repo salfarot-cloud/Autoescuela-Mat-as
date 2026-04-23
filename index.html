@@ -1,12 +1,543 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Autoescuela Matías — Campus 2026</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap');
+
+        * { box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { margin: 0; padding: 0; height: 100vh; display: flex; background: #ffe6f0; color: #4a0e1e; overflow: hidden; }
+
+        /* SIDEBAR */
+        .sidebar { 
+            width: 300px; background: rgba(255,255,255,0.9); margin: 20px; border-radius: 30px; 
+            display: flex; flex-direction: column; padding: 40px 20px;
+            box-shadow: 15px 0 50px rgba(255, 182, 193, 0.4);
+            backdrop-filter: blur(12px);
+        }
+        .sidebar h1 { color: #ff4d8d; font-weight: 900; font-size: 1.4rem; text-align: center; margin: 0; }
+        .sidebar p { text-align: center; font-size: 0.7rem; color: #ff9fbf; font-weight: 600; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 1px; }
+
+        .nav-group { display: flex; flex-direction: column; gap: 8px; }
+        .nav-btn {
+            padding: 16px 18px; border-radius: 18px; border: none; background: transparent;
+            text-align: left; font-weight: 600; color: #a37b86; cursor: pointer;
+            transition: 0.25s; display: flex; align-items: center; gap: 12px; margin-bottom: 4px;
+        }
+        .nav-btn:hover { background: #ffe0ec; color: #ff4d8d; }
+        .nav-btn.active { background: #ff4d8d; color: white; box-shadow: 0 10px 20px rgba(255, 77, 141, 0.4); }
+
+        /* MAIN */
+        .main-content { flex: 1; padding: 20px 20px 20px 0; display: flex; flex-direction: column; }
+        .panel { 
+            background: rgba(255,255,255,0.98); border-radius: 40px; flex: 1; display: none; padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.05); overflow-y: auto;
+        }
+        .panel.active { display: flex; flex-direction: column; }
+
+        /* TEST */
+        .test-grid { display: grid; grid-template-columns: 1.1fr 1.2fr; gap: 40px; height: 100%; }
+        .image-container { 
+            border-radius: 30px; overflow: hidden; background: #ffeef5; 
+            border: 4px solid white; box-shadow: 0 15px 35px rgba(0,0,0,0.06);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .image-container img { width: 100%; height: 100%; object-fit: cover; }
+
+        .question-area { display:flex; flex-direction:column; }
+        .question-header { margin-bottom: 15px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+        .question-text { font-size: 1.4rem; font-weight: 900; line-height: 1.2; margin-bottom: 20px; color: #3d0a18; }
+
+        .options-title { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color:#ff7aa8; margin-bottom:6px; }
+
+        .option {
+            background: #fdfdfd; border: 2px solid #f5d3df; padding: 16px; border-radius: 18px;
+            margin-bottom: 10px; cursor: pointer; font-weight: 600; transition: 0.2s;
+        }
+        .option:hover { border-color: #ffb6c1; background: #fff7fb; }
+        .option.correct { background: #e7fbf3; border-color: #2ecc71; color: #1e5631; }
+        .option.incorrect { background: #fff1f1; border-color: #ff5e5e; color: #7a1a1a; }
+
+        .btn-next { background: #ff4d8d; color: white; border: none; padding: 16px 20px; border-radius: 20px; font-weight: 800; cursor: pointer; margin-top: 16px; align-self:flex-end; box-shadow:0 10px 20px rgba(255,77,141,0.4); }
+        .btn-next:hover { background:#e63f7a; }
+
+        .selector-box {
+            background:#fff7fb; border-radius:20px; padding:14px 18px; border:1px solid #ffd2e5; display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:18px;
+        }
+        .selector-label { font-size:0.85rem; font-weight:700; color:#c03b6b; margin-right:6px; }
+        .selector-btn {
+            border-radius:999px; border:none; padding:6px 12px; font-size:0.8rem; cursor:pointer; background:#ffe0ec; color:#c03b6b; font-weight:600; transition:0.2s;
+        }
+        .selector-btn:hover { background:#ffb6d4; }
+        .selector-btn.active { background:#ff4d8d; color:white; }
+
+        .badge {
+            padding:4px 10px; border-radius:999px; font-size:0.75rem; font-weight:700; background:#ffe0ec; color:#c03b6b;
+        }
+
+        #feedback {
+            display:none; padding:14px; background:#fff8f9; border-radius:15px; border-left:5px solid #ff4d8d; margin:10px 0; font-size:0.9rem;
+        }
+
+        .result-box {
+            margin-top:20px; padding:18px; border-radius:20px; background:#fff0f6; border:1px solid #ffc2dd; font-size:0.95rem;
+        }
+        .result-title { font-weight:900; color:#c03b6b; margin-bottom:6px; }
+
+        /* TEMARIO */
+        .temario-header { margin-bottom:20px; }
+        .temario-header h2 { color:#ff4d8d; font-weight:900; margin:0 0 6px 0; }
+        .temario-header p { margin:0; font-size:0.9rem; color:#a37b86; }
+
+        .card { background: #fff9fb; padding: 18px 20px; border-radius: 20px; border: 1px solid #ffdeeb; margin-bottom: 10px; }
+        .card-header { display:flex; justify-content:space-between; align-items:center; cursor:pointer; }
+        .card h3 { margin: 0; color: #ff4d8d; font-size: 1rem; }
+        .card-toggle { font-size:1.2rem; color:#ff9fbf; }
+        .card-body { margin-top:10px; font-size:0.9rem; color:#5b2b3a; display:none; line-height:1.4; white-space:pre-line; }
+
+        /* SCROLL */
+        .panel::-webkit-scrollbar { width: 8px; }
+        .panel::-webkit-scrollbar-track { background: #ffe6f0; border-radius: 10px; }
+        .panel::-webkit-scrollbar-thumb { background: #ff9fbf; border-radius: 10px; }
+
+        @media (max-width: 900px) {
+            body { flex-direction:column; height:auto; overflow:auto; }
+            .sidebar { width:auto; margin:10px; border-radius:20px; flex-direction:row; align-items:center; justify-content:space-between; gap:10px; }
+            .nav-group { flex-direction:row; }
+            .main-content { padding:10px; }
+            .panel { border-radius:20px; padding:20px; }
+            .test-grid { grid-template-columns:1fr; }
+        }
+    </style>
 </head>
 <body>
-    <h1>Hello World</h1>
-    <p>This is a sample HTML document. Hi there!, coco</p>
+
+    <div class="sidebar">
+        <div class="brand">
+            <h1>AUTOESCUELA MATÍAS</h1>
+            <p>MÉTODO RESUMIDO 2026</p>
+        </div>
+        <div class="nav-group">
+            <button class="nav-btn active" onclick="showPage('test', this)">📝 Realizar Test</button>
+            <button class="nav-btn" onclick="showPage('temario', this)">📚 Temario Resumido</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <!-- PANEL TEST -->
+        <div id="test" class="panel active">
+            <div class="test-grid">
+                <div class="image-container">
+                    <img id="main-img" src="https://images.unsplash.com/photo-1511919884226-fd3cad34687c?q=80&w=800">
+                </div>
+                <div class="question-area">
+                    <div class="question-header">
+                        <div>
+                            <span class="badge" id="question-counter">Pregunta 0 / 0</span>
+                        </div>
+                        <div>
+                            <span class="badge" id="question-topic">Tema: —</span>
+                        </div>
+                    </div>
+
+                    <div class="selector-box" id="selector-box">
+                        <span class="selector-label">Selecciona cuántas preguntas quieres:</span>
+                        <button class="selector-btn" onclick="setQuestionCount(5)">5</button>
+                        <button class="selector-btn" onclick="setQuestionCount(10)">10</button>
+                        <button class="selector-btn" onclick="setQuestionCount(20)">20</button>
+                        <button class="selector-btn" onclick="setQuestionCount(30)">30</button>
+                        <button class="selector-btn" onclick="setQuestionCount(40)">40</button>
+                        <button class="selector-btn" onclick="setQuestionCount(50)">50</button>
+                    </div>
+
+                    <div id="q-txt" class="question-text"></div>
+                    <div class="options-title" id="options-title" style="display:none;">Elige una respuesta:</div>
+                    <div id="options-box"></div>
+                    <div id="feedback"></div>
+                    <div id="result-box" class="result-box" style="display:none;"></div>
+                    <button id="next-btn" class="btn-next" style="display:none;" onclick="nextQuestion()">Siguiente pregunta →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL TEMARIO -->
+        <div id="temario" class="panel">
+            <div class="temario-header">
+                <h2>Contenido del Manual 2026 (Resumido)</h2>
+                <p>Basado en el manual resumido del permiso B 2026.</p>
+            </div>
+            <div id="topic-grid"></div>
+        </div>
+    </div>
+<script>
+/* ============================
+   BANCO DE PREGUNTAS CORREGIDO
+   ============================ */
+
+const quizBank = [
+    {
+        q: "Según el manual, ¿quién se considera CONDUCTOR?",
+        img: "https://images.unsplash.com/photo-1516570161787-2fd917215a3d?q=80&w=800", 
+        opts: [
+            "La persona que empuja una bicicleta o un ciclomotor",
+            "La persona que empuja una motocicleta",
+            "La persona que camina por la acera"
+        ],
+        ans: 1,
+        why: "Quien empuja carro, bici o ciclomotor es peatón. Quien empuja una motocicleta se considera conductor."
+    },
+    {
+        q: "Un peatón es la persona que...",
+        img: "https://images.unsplash.com/photo-1521292270410-a8c53642e9d0?q=80&w=800",
+        opts: [
+            "Transita a pie por la vía o empuja un carro, bici o ciclomotor",
+            "Conduce un turismo por la calzada",
+            "Solo camina por la acera"
+        ],
+        ans: 0,
+        why: "El manual define peatón como quien transita a pie o empuja carro, bici o ciclomotor."
+    },
+    {
+        q: "¿Qué vehículo se considera REMOLQUE LIGERO?",
+        img: "https://images.unsplash.com/photo-1525609004556-c46c7d6cf023?q=80&w=800",
+        opts: [
+            "Aquel con MMA superior a 750 kg",
+            "Aquel con MMA hasta 750 kg",
+            "Aquel con MMA hasta 3.500 kg"
+        ],
+        ans: 1,
+        why: "Remolque ligero = hasta 750 kg de Masa Máxima Autorizada (MMA)."
+    },
+    {
+        q: "¿Qué velocidad máxima puede alcanzar un ciclomotor?",
+        img: "https://images.unsplash.com/photo-1502877338535-766e1452684a?q=80&w=800",
+        opts: [
+            "45 km/h",
+            "50 km/h",
+            "60 km/h"
+        ],
+        ans: 0,
+        why: "El ciclomotor tiene velocidad máxima de 45 km/h según el manual."
+    },
+    {
+        q: "Esta señal indica la proximidad de:",
+        img: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Spain_traffic_signal_paso_a_nivel_con_barreras.png/480px-Spain_traffic_signal_paso_a_nivel_con_barreras.png",
+        opts: [
+            "Paso a nivel con barreras",
+            "Paso a nivel sin barreras",
+            "Estación de tren"
+        ],
+        ans: 0,
+        why: "Triángulo con tren y barrera = paso a nivel con barreras."
+    },
+    {
+        q: "Si un agente levanta el brazo verticalmente, debes:",
+        img: "https://images.unsplash.com/photo-1521292270410-a8c53642e9d0?q=80&w=800",
+        opts: [
+            "Detenerte solo si vienes de frente",
+            "Detenerte solo si vienes por detrás",
+            "Detenerte vengas de donde vengas"
+        ],
+        ans: 2,
+        why: "Brazo levantado = detención obligatoria para todos los usuarios."
+    },
+    {
+        q: "Esta señal prohíbe el paso a:",
+        img: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Spain_traffic_signal_prohibido_vehiculos_a_motor.png/480px-Spain_traffic_signal_prohibido_vehiculos_a_motor.png",
+        opts: [
+            "Todos los vehículos",
+            "Vehículos de motor",
+            "Solo motocicletas"
+        ],
+        ans: 1,
+        why: "Prohíbe el paso a vehículos de motor; pueden pasar peatones, ciclos, etc."
+    },
+    {
+        q: "¿Qué documentación es obligatoria llevar en el vehículo?",
+        img: "https://images.unsplash.com/photo-1511391037251-0a3f66f9a9e1?q=80&w=800",
+        opts: [
+            "Permiso de conducción, permiso de circulación y tarjeta ITV",
+            "Solo el permiso de conducción",
+            "Solo el recibo del seguro"
+        ],
+        ans: 0,
+        why: "Obligatoria: permiso de conducción, permiso de circulación y tarjeta ITV."
+    },
+    {
+        q: "Esta señal azul con número indica:",
+        img: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Spain_traffic_signal_velocidad_minima_obligatoria.png/480px-Spain_traffic_signal_velocidad_minima_obligatoria.png",
+        opts: [
+            "Velocidad máxima",
+            "Velocidad mínima obligatoria",
+            "Velocidad recomendada"
+        ],
+        ans: 1,
+        why: "Círculo azul con número = velocidad mínima obligatoria."
+    },
+    {
+        q: "¿Qué vehículos deben tener seguro obligatorio?",
+        img: "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?q=80&w=800",
+        opts: [
+            "Solo turismos y motos",
+            "Vehículos de motor, ciclomotores y remolques pesados",
+            "Solo vehículos que circulen por autopista"
+        ],
+        ans: 1,
+        why: "Seguro obligatorio: vehículos de motor, ciclomotores y remolques/semirremolques pesados."
+    },
+    {
+        q: "Esta señal con dos coches, uno rojo y otro negro, significa:",
+        img: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Spain_traffic_signal_prohibido_adelantar.png/480px-Spain_traffic_signal_prohibido_adelantar.png",
+        opts: [
+            "Prohibido adelantar",
+            "Prohibido adelantar solo a camiones",
+            "Fin de prohibición de adelantamiento"
+        ],
+        ans: 0,
+        why: "Dos coches (rojo y negro) = prohibido adelantar."
+    },
+    {
+        q: "En esta zona residencial con niños jugando, la velocidad máxima es:",
+        img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Spain_traffic_signal_zona_residencial.png/480px-Spain_traffic_signal_zona_residencial.png",
+        opts: [
+            "10 km/h",
+            "20 km/h",
+            "30 km/h"
+        ],
+        ans: 0,
+        why: "En la zona de estancia y juego la velocidad máxima es 10 km/h."
+    }
+];
+
+/* ============================
+   TEMARIO RESUMIDO
+   ============================ */
+
+const manualData = [
+    {
+        t: "Tema 0 – Definiciones",
+        d: `
+- Conductor: persona que maneja el mecanismo de dirección o empuja una motocicleta.
+- Peatón: persona que transita a pie o empuja carro, bici o ciclomotor.
+- Usuario del vehículo: conductor y pasajeros.
+- Vehículos: sin motor, con motor no considerados de motor (VMP, ciclomotor, cuatriciclo ligero) y vehículos de motor.
+- Remolque ligero: hasta 750 kg MMA. Remolque no ligero: más de 750 kg MMA.
+        `
+    },
+    {
+        t: "Tema 1 – Documentación",
+        d: `
+- Obligatoria: permiso de conducción, permiso de circulación y tarjeta ITV.
+- Recibo del seguro: recomendable, no obligatorio.
+- Renovación permiso de conducción: cada 10 años (cada 5 a partir de 65 años).
+- ITV: según tipo de vehículo.
+- Seguro obligatorio: vehículos de motor, ciclomotores y remolques pesados.
+        `
+    },
+    {
+        t: "Tema 2 – Señalización de la vía",
+        d: `
+- Orden de prioridad: 1) Agentes, 2) Balizamiento, 3) Semáforos, 4) Señales verticales, 5) Marcas viales.
+- Agentes: brazo levantado → detenerse todos.
+- Silbato: toque corto → detenerse; toque largo → reanudar.
+- Balizamiento: conos, paneles, luces rojas fijas.
+        `
+    },
+    {
+        t: "Tema 3 – Señales verticales",
+        d: `
+- Peligro: triángulos con borde rojo.
+- Reglamentación: circulares con borde rojo (prohibiciones) o fondo azul (obligaciones).
+- Ceda el paso y STOP: prioridad especial.
+- Prohibiciones: velocidad, adelantamientos, giros.
+        `
+    },
+    {
+        t: "Tema 4 – Señales de indicación",
+        d: `
+- Autovía, autopista, vía para automóviles.
+- Carril VAO, carril bus/taxi/moto.
+- Zona residencial (10 km/h) y zona de coexistencia (20 km/h).
+        `
+    }
+];
+
+/* ============================
+   LÓGICA DEL TEST
+   ============================ */
+
+let selectedQuestions = [];
+let currentIndex = 0;
+let busy = false;
+let totalQuestions = 0;
+let correctCount = 0;
+
+function showPage(id, btn) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+}
+
+function shuffleArray(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+function setQuestionCount(n) {
+    document.querySelectorAll('.selector-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.selector-btn').forEach(b => {
+        if (b.textContent.trim() === String(n)) b.classList.add('active');
+    });
+
+    const copy = [...quizBank];
+    shuffleArray(copy);
+    totalQuestions = Math.min(n, copy.length);
+    selectedQuestions = copy.slice(0, totalQuestions);
+    currentIndex = 0;
+    correctCount = 0;
+
+    document.getElementById("result-box").style.display = "none";
+    document.getElementById("selector-box").style.display = "flex";
+    document.getElementById("options-title").style.display = "block";
+
+    loadQuestion();
+}
+
+function loadQuestion() {
+    if (!selectedQuestions.length) return;
+    busy = false;
+    const data = selectedQuestions[currentIndex];
+
+    const img = document.getElementById("main-img");
+    img.src = data.img;
+    img.onerror = () => { img.src = 'https://placehold.co/800x600/ffb6c1/ffffff?text=Autoescuela+Matias'; };
+
+    document.getElementById("q-txt").innerText = data.q;
+    document.getElementById("feedback").style.display = "none";
+    document.getElementById("feedback").innerHTML = "";
+    document.getElementById("next-btn").style.display = "none";
+    document.getElementById("result-box").style.display = "none";
+
+    document.getElementById("question-counter").textContent = `Pregunta ${currentIndex + 1} / ${totalQuestions}`;
+    document.getElementById("question-topic").textContent = "Tema: Manual B 2026";
+
+    const box = document.getElementById("options-box");
+    box.innerHTML = "";
+    data.opts.forEach((o, i) => {
+        const d = document.createElement("div");
+        d.className = "option";
+        d.innerText = o;
+        d.onclick = () => {
+            if (busy) return;
+            busy = true;
+            if (i === data.ans) {
+                d.classList.add("correct");
+                correctCount++;
+            } else {
+                d.classList.add("incorrect");
+                box.children[data.ans].classList.add("correct");
+            }
+            document.getElementById("feedback").innerHTML = `<strong>Explicación:</strong> ${data.why}`;
+            document.getElementById("feedback").style.display = "block";
+            document.getElementById("next-btn").style.display = "inline-flex";
+        };
+        box.appendChild(d);
+    });
+}
+
+function getLevel(scorePercent) {
+    if (scorePercent <= 25) return "Básico";
+    if (scorePercent <= 60) return "Medio";
+    if (scorePercent <= 85) return "Avanzado";
+    return "Experto";
+}
+
+function nextQuestion() {
+    currentIndex++;
+    if (currentIndex < totalQuestions) {
+        loadQuestion();
+    } else {
+        const percent = Math.round((correctCount / totalQuestions) * 100);
+        const level = getLevel(percent);
+        const resultBox = document.getElementById("result-box");
+        resultBox.innerHTML = `
+            <div class="result-title">¡Test finalizado en Autoescuela Matías!</div>
+            <div>Has acertado <strong>${correctCount}</strong> de <strong>${totalQuestions}</strong> preguntas.</div>
+            <div>Porcentaje de aciertos: <strong>${percent}%</strong>.</div>
+            <div>Nivel obtenido: <strong>${level}</strong>.</div>
+            <br>
+            <button class="selector-btn" style="padding:8px 14px;" onclick="restartTest()">Reiniciar test</button>
+        `;
+        resultBox.style.display = "block";
+        document.getElementById("next-btn").style.display = "none";
+        document.getElementById("feedback").style.display = "none";
+    }
+}
+
+function restartTest() {
+    document.getElementById("q-txt").innerText = "Selecciona cuántas preguntas quieres para empezar un nuevo test.";
+    document.getElementById("options-box").innerHTML = "";
+    document.getElementById("feedback").style.display = "none";
+    document.getElementById("result-box").style.display = "none";
+    document.getElementById("options-title").style.display = "none";
+    document.getElementById("question-counter").textContent = "Pregunta 0 / 0";
+    document.getElementById("question-topic").textContent = "Tema: —";
+    document.getElementById("selector-box").style.display = "flex";
+    document.querySelectorAll('.selector-btn').forEach(b => b.classList.remove('active'));
+}
+
+function initTemario() {
+    const grid = document.getElementById("topic-grid");
+    manualData.forEach((m) => {
+        const c = document.createElement("div");
+        c.className = "card";
+
+        const header = document.createElement("div");
+        header.className = "card-header";
+        const h3 = document.createElement("h3");
+        h3.textContent = m.t;
+        const toggle = document.createElement("span");
+        toggle.className = "card-toggle";
+        toggle.textContent = "+";
+
+        header.appendChild(h3);
+        header.appendChild(toggle);
+
+        const body = document.createElement("div");
+        body.className = "card-body";
+        body.textContent = m.d.trim();
+
+        header.onclick = () => {
+            const visible = body.style.display === "block";
+            body.style.display = visible ? "none" : "block";
+            toggle.textContent = visible ? "+" : "−";
+        };
+
+        c.appendChild(header);
+        c.appendChild(body);
+        grid.appendChild(c);
+    });
+}
+
+function init() {
+    document.getElementById("q-txt").innerText = "Selecciona cuántas preguntas quieres para empezar tu test de Autoescuela Matías.";
+    document.getElementById("options-title").style.display = "none";
+    document.getElementById("options-box").innerHTML = "";
+    document.getElementById("feedback").style.display = "none";
+    document.getElementById("result-box").style.display = "none";
+    document.getElementById("question-counter").textContent = "Pregunta 0 / 0";
+    document.getElementById("question-topic").textContent = "Tema: —";
+
+    initTemario();
+}
+
+init();
+</script>
 </body>
 </html>
